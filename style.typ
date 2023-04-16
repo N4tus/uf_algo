@@ -1,0 +1,57 @@
+#import "style_base.typ": elem, sp, join, inject, if_string, if_string_else, if_number, if_number_else, pipe
+
+#let keyword(k)      = elem(k, "keyword")
+#let kw_function(f)  = elem(f, "keyword", "function")
+#let kw_operator(o)  = elem(o, "keyword", "operator")
+#let kw_control(c)   = elem(c, "keyword", "control")
+#let loop(c)         = elem(c, "keyword", "control", "loop")
+#let condition(c)    = elem(c, "keyword", "control", "condition")
+#let imp(c)          = elem(c, "keyword", "control", "import")
+#let ret(c)          = elem(c, "keyword", "control", "return")
+#let exception(c)    = elem(c, "keyword", "control", "exception")
+#let directive(d)    = elem(d, "keyword", "directive")
+#let type(t)         = elem(t, "keyword", "type")
+#let ty_class(t)     = elem(t, "keyword", "type", "class")
+#let ty_struct(t)    = elem(t, "keyword", "type", "struct")
+#let ty_union(t)     = elem(t, "keyword", "type", "union")
+#let ty_enum(t)      = elem(t, "keyword", "type", "enum")
+#let ty_interface(t) = elem(t, "keyword", "type", "interface")
+
+#let variable(v)      = elem(v, "variable")
+#let var_builtin(b)   = elem(b, "variable", "builtin")
+#let var_this(b)      = elem(b, "variable", "builtin", "this")
+#let var_parameter(p) = elem(p, "variable", "parameter")
+#let var_self(p)      = elem(p, "variable", "parameter", "self")
+#let var_class(p)     = elem(p, "variable", "parameter", "class")
+#let var_function(f)  = elem(f, "variable", "function")
+#let var_fn_def(f)    = elem(f, "variable", "function", "definition")
+#let var_ctor(f)      = elem(f, "variable", "function", "constructor")
+#let var_dtor(f)      = elem(f, "variable", "function", "destructor")
+#let var_attribute(a) = elem(a, "variable", "attribute")
+
+#let comment(c)       = elem(c, "comment")
+#let comment_sym(c)   = elem(c, "comment", "sym")
+#let comment_line(c)  = elem(c, "comment", "line")
+#let comment_block(c) = elem(c, "comment", "block")
+#let comment_doc(c)   = elem(c, "comment", "doc")
+
+#let string(s)     = elem(s, "string")
+#let str_quotes(q) = elem(q, "string", "quotes")
+#let str_regex(s)  = elem(s, "string", "regex")
+
+#let punct(p)           = elem(p, "punct")
+#let punct_delimiter(d) = elem(d, "punct", "delimiter")
+#let punct_bracket(b)   = elem(b, "punct", "bracket")
+#let punct_special(s)   = elem(s, "punct", "special")
+
+#let operator(o)  = elem(o, "operator")
+#let op_unary(o)  = elem(o, "operator", "unary")
+#let op_binary(o) = elem(o, "operator", "binary")
+
+#let number(n)     = elem(n, "number")
+#let num_float(f)  = elem(f, "number", "float")
+#let num_int(i)    = elem(i, "number", "int")
+#let num_length(f) = elem(f, "number", "length")
+
+#let label(l) = elem(l, "label")
+
