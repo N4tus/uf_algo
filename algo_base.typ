@@ -6,8 +6,8 @@
   }
 }
 
-#let block(body) = {
-  (body: body, indent: 1em)
+#let block(body, indent) = {
+  (body: body, indent: indent)
 }
 
 #let _choose_format(style, default, name) = {
@@ -38,6 +38,9 @@
   (a1, a2, a3, a4)=>a1+a2+a3+a4,
   (a1, a2, a3, a4, a5)=>a1+a2+a3+a4+a5,
   (a1, a2, a3, a4, a5, a6)=>a1+a2+a3+a4+a5+a6,
+  (a1, a2, a3, a4, a5, a6, a7)=>a1+a2+a3+a4+a5+a6+a7,
+  (a1, a2, a3, a4, a5, a6, a7, a8)=>a1+a2+a3+a4+a5+a6+a7+a8,
+  (a1, a2, a3, a4, a5, a6, a7, a8, a9)=>a1+a2+a3+a4+a5+a6+a7+a8+a9,
 )
 #let expr(name, ..values, format: none, format_name: "format") = _ex_style(name, style => {
   let values = values.pos()
@@ -46,10 +49,10 @@
   format(..values.map(_line_format.with(style: style)))
 })
 
-#let control_flow(name, ..values, format_head: none, format_tail: none, format_head_name: "format_head", format_tail_name: "format_tail", with_body: d=>d) = (..body) => {
+#let control_flow(name, ..values, format_head: none, format_tail: none, format_head_name: "format_head", format_tail_name: "format_tail", indent: 1em, indent_name: "indent", with_body: d=>d) = (..body) => {
   (
     expr(name, ..values, format: format_head, format_name: format_head_name),
-    block(with_body(body.pos())), 
+    block(with_body(body.pos()), style => _choose_format(style.at(name), indent, indent_name)), 
     expr(name, ..values, format: format_tail, format_name: format_tail_name),
   )
 }
@@ -83,11 +86,11 @@
   if not "style" in format {
     panic("Format does not have style field. You have to manually insert the style in the format.")
   }
-  let is_body(var) = type(var) == "dictionary" and var.len() == 2 and "body" in var and "indent" in var
+  let is_body(var) = type(var) == "dictionary" and var.len() == 2 and "body" in var and "indent" in var and type(var.indent) == "function"
   let indent(lines, level, format) = {
     for l in lines {
       if is_body(l) {
-        indent(l.body, level + l.indent, if "body" in format { format.body } else { format })
+        indent(l.body, level + (l.indent)(format), if "body" in format { format.body } else { format })
       } else if type(l) == "array" {
         indent(l, level, format)
       } else {
