@@ -63,8 +63,17 @@
   _mk_array(before) + _mk_array(content) + _mk_array(after)
 }
 
+// (value: E, styles: ((fn: (E, style) => content, precedence: style => integer),))
+#let _is_elem(elem) = {
+  type(elem) == "dictionary" and elem.len() == 2 and "value" in elem and "styles" in elem and type(elem.styles) == "array"
+}
+
+#let _is_group(e) = type(e) == "dictionary" and "group" in e
+#let _is_group_start(e) = _is_group(e) and type(e.group) == "function"
+#let _is_group_end(e) = _is_group(e) and e.group == none
+
 #let eval_line(elem, style) = elem.flatten().map(e => 
-  if type(e) == "dictionary" { 
+  if _is_elem(e) {
     let first_style = e.styles.at(0)
     let ex_prec = first_style.precedence
     let acc = (fn: first_style.fn, prec: ex_prec(style))
@@ -79,14 +88,37 @@
     })
     let styler = chosen_style.fn
     styler(e.value, style)
-  } else { e }
-).join("")
+  } else {
+    e
+  }
+)
 
 #let algo_body(format) = (..content) => {
   if not "style" in format {
     panic("Format does not have style field. You have to manually insert the style in the format.")
   }
   let is_body(var) = type(var) == "dictionary" and var.len() == 2 and "body" in var and "indent" in var and type(var.indent) == "function"
+  let gather_group(elem, start_idx) = {
+    (none, start_idx)
+  }
+  let resolve_groups(elem, start_idx) = {
+    let i = start_idx
+    let items = ()
+    while i < elem.len() {
+      let e = elem.at(i)
+      if _is_group_start(e) {
+        let (inner, next_idx) = resolve_groups(elem, i+1)
+        i = next_idx
+        items.push((e.group)(inner))
+      } else if _is_group_end(e) {
+        return (items.join(""), i+1)
+      } else {
+        items.push(e)
+        i = i+1
+      }
+    }
+    (items.join(""), i)
+  }
   let indent(lines, level, format) = {
     for l in lines {
       if is_body(l) {
@@ -97,7 +129,7 @@
         let elem = l(format)
         if elem == none { continue }
         let elem = if type(elem) == "array" {
-          eval_line(elem, format.style)
+          resolve_groups(eval_line(elem, format.style), 0).at(0)
         } else {
           elem
         }

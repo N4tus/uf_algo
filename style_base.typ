@@ -1,20 +1,15 @@
-#import "algo_base.typ": _format_fns, eval_line
-
-// (value: E, styles: ((fn: (E, style) => content, precedence: style => integer),))
-#let _is_elem(elem) = {
-  type(elem) == "dictionary" and elem.len() == 2 and "value" in elem and "styles" in elem and type(elem.styles) == "array"
-}
+#import "algo_base.typ": _format_fns, eval_line, _is_elem
 
 #let _ex_style(name, elem, styler, pred) = {
   let ex_style = (elem, style) => {
-    if name in style {
+    if name != none and name in style {
       styler(elem, style)
     } else {
       panic("missing '" + name + "' in style definition")
     }
   }
   let precedence = style => {
-    if name in style {
+    if name != none and name in style {
       pred(style)
     } else {
       panic("missing '" + name + "' in style definition")
@@ -70,8 +65,8 @@
 
 #let sp = " "
 #let join(elems, sep) = if elems.len() == 0 {()} else if elems.len() == 1 { elems.at(0) } else { range(elems.len()*2-1).map(i => if calc.even(i) {elems.at(int(i/2))} else {sep}) }
-#let _resume(..elems, style: none) = eval_line(elems.pos(), style)
-#let inject(inner) = style => inner(_resume.with(style: style))
+#let ge = (group: none)
+#let gs(fn) = (group: fn)
 
 #let pipe(..fns) = s => {
   let _s = s

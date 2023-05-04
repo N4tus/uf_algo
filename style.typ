@@ -1,4 +1,4 @@
-#import "style_base.typ": elem, sp, join, inject, if_string, if_string_else, if_number, if_number_else, pipe
+#import "style_base.typ": elem, sp, join, gs, ge, if_string, if_string_else, if_number, if_number_else, pipe
 
 #let keyword(k)      = elem(k, "keyword")
 #let kw_function(f)  = elem(f, "keyword", "function")
@@ -36,7 +36,7 @@
 #let comment_doc(c)   = elem(c, "comment", "doc")
 
 #let string(s)     = elem(s, "string")
-#let str_quotes(q) = elem(q, "string", "quotes")
+#let str_quote(q)  = elem(q, "string", "quote")
 #let str_regex(s)  = elem(s, "string", "regex")
 
 #let punct(p)           = elem(p, "punct")
