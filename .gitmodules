@@ -1,0 +1,3 @@
+[submodule "types-for-typst"]
+	path = types-for-typst
+	url = https://github.com/N4tus/types-for-typst
