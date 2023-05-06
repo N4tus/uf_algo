@@ -1,3 +1,5 @@
+#import "types-for-typst/types_for_typst.typ": *
+
 #let _ex_style(name, fn) = style => {
   if name == none or name in style {
     fn(style)
@@ -63,31 +65,41 @@
   _mk_array(before) + _mk_array(content) + _mk_array(after)
 }
 
-// (value: E, styles: ((fn: (E, style) => content, precedence: style => integer),))
-#let _is_elem(elem) = {
-  type(elem) == "dictionary" and elem.len() == 2 and "value" in elem and "styles" in elem and type(elem.styles) == "array"
-}
+#let AElem(t_value) = TDict(value: t_value, styles: TArray(TDict(fn: TFunction, precedence: TFunction))) 
+#let TElem = AElem(TAny)
 
-#let _is_group(e) = type(e) == "dictionary" and "group" in e
-#let _is_group_start(e) = _is_group(e) and type(e.group) == "function"
-#let _is_group_end(e) = _is_group(e) and e.group == none
+#let AGroup(t_group) = TDict(group: t_group, start_style: optional(TFunction), end_style: optional(TFunction), use_start: optional(TBoolean), use_end: optional(TBoolean))
+#let TGroup = AGroup(t_or(TFunction, TNone))
+#let TGroupElem = AElem(TGroup)
+#let TGroupStart = AGroup(TFunction)
+#let TGroupEnd = AGroup(TNone)
 
 #let eval_line(elem, style) = elem.flatten().map(e => 
-  if _is_elem(e) {
-    let first_style = e.styles.at(0)
-    let ex_prec = first_style.precedence
-    let acc = (fn: first_style.fn, prec: ex_prec(style))
-    let chosen_style = e.styles.slice(1).fold(acc, (acc, style_def) => {
-      let ex_precedence = style_def.precedence
-      let precedence = ex_precedence(style)
-      if precedence > acc.prec {
-        (fn: style_def.fn, prec: precedence)
+  if t_check(TElem, e) {
+    if e.styles.len() == 0 {
+      e.value
+    } else {
+      let first_style = e.styles.at(0)
+      let ex_prec = first_style.precedence
+      let acc = (fn: first_style.fn, prec: ex_prec(style))
+      let chosen_style = e.styles.slice(1).fold(acc, (acc, style_def) => {
+        let ex_precedence = style_def.precedence
+        let precedence = ex_precedence(style)
+        if precedence > acc.prec {
+          (fn: style_def.fn, prec: precedence)
+        } else {
+          acc
+        }
+      })
+      let styler = chosen_style.fn
+      if t_check(TGroupStart, e.value) {
+        (start_style: v => styler(v, style), ..e.value)
+      } else if t_check(TGroupEnd, e.value) {
+        (end_style: v => styler(v, style), ..e.value)
       } else {
-        acc
+        styler(e.value, style)
       }
-    })
-    let styler = chosen_style.fn
-    styler(e.value, style)
+    }
   } else {
     e
   }
@@ -106,11 +118,27 @@
     let items = ()
     while i < elem.len() {
       let e = elem.at(i)
-      if _is_group_start(e) {
+      if t_check(TGroupStart, e) {
         let (inner, next_idx) = resolve_groups(elem, i+1)
         i = next_idx
-        items.push((e.group)(inner))
-      } else if _is_group_end(e) {
+
+        let start_style = if "start_style" in e { e.start_style } else { v=>v }
+        let end_style   = if "end_style"   in e { e.end_style }   else { v=>v }
+        let use_start   = if "use_start"   in e { e.use_start }   else { v=>v }
+        let use_end     = if "use_end"     in e { e.use_end }     else { v=>v }
+
+        let item = if use_start and use_end {
+          (e.group)(inner, start_style, end_style)
+        } else if use_start {
+          (e.group)(inner, start_style)
+        } else if use_end {
+          (e.group)(inner, end_style)
+        } else {
+          (e.group)(inner)
+        }
+        
+        items.push(item)
+      } else if t_check(TGroupEnd, e) {
         return (items.join(""), i+1)
       } else {
         items.push(e)

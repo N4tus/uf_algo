@@ -1,4 +1,5 @@
-#import "algo_base.typ": _format_fns, eval_line, _is_elem
+#import "algo_base.typ": _format_fns, eval_line, TElem
+#import "types-for-typst/types_for_typst.typ": *
 
 #let _ex_style(name, elem, styler, pred) = {
   let ex_style = (elem, style) => {
@@ -16,16 +17,15 @@
     }
   }
   let style = (fn: ex_style, precedence: precedence)
-  if _is_elem(elem) {
+  if t_check(TElem, elem) {
     elem.styles.push(style)
     elem
   } else if type(elem) == "array" {
-    let elem = elem.flatten()
-    elem.map(e => if _is_elem(e) { 
+    elem.flatten().map(e => if t_check(TElem, e) { 
       e.styles.push(style)
-      (value: e.value, styles: e.styles) 
-    } else {
       e
+    } else {
+      (value: e, styles: (style,))
     })
   } else {
     (value: elem, styles: (style,))
@@ -65,8 +65,8 @@
 
 #let sp = " "
 #let join(elems, sep) = if elems.len() == 0 {()} else if elems.len() == 1 { elems.at(0) } else { range(elems.len()*2-1).map(i => if calc.even(i) {elems.at(int(i/2))} else {sep}) }
-#let ge = (group: none)
-#let gs(fn) = (group: fn)
+#let ge = (value: (group: none), styles: ())
+#let gs(fn, use_start: false, use_end: false) = (value: (group: fn, use_start: use_start, use_end: use_end), styles: ())
 
 #let pipe(..fns) = s => {
   let _s = s
