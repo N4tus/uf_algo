@@ -14,8 +14,8 @@
   }
 }
 
-#let block(body, indent) = {
-  (body: body, indent: indent)
+#let block(body, indent, makeup) = {
+  (body: body, indent: indent, makeup: makeup)
 }
 
 #let _choose_formatter(format, default, name) = {
@@ -48,7 +48,7 @@
 #let control_flow(name, ..values, format_head: none, format_tail: none, format_head_name: "format_head", format_tail_name: "format_tail", indent: 1em, indent_name: "indent", with_body: d=>d) = (..body) => {
   (
     expr(name, ..values, format: format_head, format_name: format_head_name),
-    block(with_body(body.pos()), _ex_format(name, format => _choose_formatter(format.at(name), indent, indent_name))), 
+    block(with_body(body.pos()), _ex_format(name, format => _choose_formatter(format.at(name), indent, indent_name)), _ex_format(name, format => if "makeup" in format.at(name) {format.at(name).makeup})), 
     expr(name, ..values, format: format_tail, format_name: format_tail_name),
   )
 }
@@ -99,7 +99,8 @@
   let indent(lines, level, makeup) = {
     for l in lines {
       if t_check(TBody, l) {
-        indent(l.body, level + (l.indent)(makeup), if "body" in makeup { format.body } else { makeup })
+        let m = (l.makeup)(makeup) 
+        indent(l.body, level + (l.indent)(makeup), if m != none { m } else { makeup })
       } else if type(l) == "array" {
         indent(l, level, makeup)
       } else {

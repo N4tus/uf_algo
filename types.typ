@@ -10,4 +10,4 @@
 #let TGroupStart = AGroup(TFunction)
 #let TGroupEnd = AGroup(TNone)
 
-#let TBody = TDict(body: TAny, indent: TFunction)
+#let TBody = TDict(body: TAny, indent: TFunction, makeup: TFunction)
