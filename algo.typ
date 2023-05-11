@@ -16,6 +16,7 @@
 
 #let FnCall(fn, ..args) = expr("fn_call", fn, args.pos())
 #let MethodCall(obj, method, ..args) = expr("method_call", obj, method, args.pos())
+#let Index(obj, ..index) = expr("index", obj, index.pos())
 
 #let Str(s)         = expr("str",   s)
 #let Num(num)       = expr("num",   num)
